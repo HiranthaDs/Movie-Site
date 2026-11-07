@@ -11,6 +11,7 @@ import './styles.css';
 import './hich-theme.css';
 import './device.css';
 import './features.css';
+import './experience.css';
 
 const Home=lazy(()=>import('./pages/Home'));
 const Browse=lazy(()=>import('./pages/Browse'));

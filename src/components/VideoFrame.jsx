@@ -18,6 +18,7 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
   const onProgressRef=useRef(onProgress);
   const onStateRef=useRef(onStateChange);
   const resumeRef=useRef(resume);
+  const retryPositionRef=useRef(null);
   const statusRef=useRef(source?(tvExternal?'blocked':'loading'):'idle');
   const [status,setStatus]=useState(statusRef.current);
   const [message,setMessage]=useState('Connecting to server…');
@@ -64,14 +65,14 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
     const listener=event=>{
       if(event.origin!==sourceOrigin)return;
       const frameWindow=iframeRef.current?.contentWindow;
-      if(frameWindow&&event.source!==frameWindow)return;
+      if(!frameWindow||event.source!==frameWindow)return;
       const payload=parseEmbedPlayerMessage(event.data);
       if(!payload)return;
       if(payload.event==='play')updateState('playing','Playing');
       else if(payload.event==='pause')updateState('paused','Paused');
       else if(payload.event==='ended')updateState('ended','Playback complete');
       else if(payload.event==='timeupdate'&&statusRef.current==='connected')updateState('playing','Playing');
-      if(['timeupdate','pause','ended'].includes(payload.event)&&typeof payload.currentTime==='number')onProgressRef.current(payload.currentTime,payload.duration);
+      if(['timeupdate','pause','ended'].includes(payload.event)&&typeof payload.currentTime==='number')onProgressRef.current(payload.currentTime,payload.duration,payload.event!=='timeupdate');
       window.dispatchEvent(new CustomEvent('cinera:remote-state',{detail:{
         playerState:payload.event==='timeupdate'?'playing':payload.event,
         currentTime:payload.currentTime,
@@ -101,7 +102,7 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
     };
     const onMetadata=()=>{
       if(!didResume){
-        const position=Number(resumeRef.current)||0;
+        const position=Number(retryPositionRef.current??resumeRef.current)||0;
         if(position>0&&Number.isFinite(elem.duration)&&position<elem.duration-12)elem.currentTime=position;
         didResume=true;
       }
@@ -127,7 +128,9 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
     const onWaiting=()=>{if(statusRef.current!=='error'){setConnectionStage(2);updateState('buffering','Buffering your video…');}};
     const onStalled=()=>{if(elem.readyState<3&&(statusRef.current==='loading'||!elem.paused))onWaiting();};
     const onPlaying=()=>updateState('playing','Playing');
-    const onPause=()=>{if(!elem.ended&&['playing','starting'].includes(statusRef.current))updateState('paused','Paused');};
+    const persistPosition=()=>{if(didResume)onProgressRef.current(elem.currentTime,elem.duration,true);};
+    const onHidden=()=>{if(document.hidden)persistPosition();};
+    const onPause=()=>{persistPosition();if(!elem.ended&&['playing','starting','buffering'].includes(statusRef.current))updateState('paused','Paused');};
     const onEnded=()=>updateState('ended','Playback complete');
     const onError=()=>{
       const descriptions={2:'The connection to this server was interrupted.',3:'This video could not be decoded.',4:'This video format or source is unavailable.'};
@@ -143,6 +146,8 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
     elem.addEventListener('pause',onPause);
     elem.addEventListener('ended',onEnded);
     elem.addEventListener('error',onError);
+    window.addEventListener('pagehide',persistPosition);
+    document.addEventListener('visibilitychange',onHidden);
 
     if(source.type==='hls'){
       if(nativeHlsType(elem)){
@@ -190,6 +195,7 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
 
     return()=>{
       disposed=true;
+      if(didResume)retryPositionRef.current=elem.currentTime;
       elem.removeEventListener('loadstart',onLoadStart);
       elem.removeEventListener('loadedmetadata',onMetadata);
       elem.removeEventListener('canplay',onCanPlay);
@@ -199,6 +205,8 @@ export default function VideoFrame({source,resume=0,onProgress=()=>{},poster,onS
       elem.removeEventListener('pause',onPause);
       elem.removeEventListener('ended',onEnded);
       elem.removeEventListener('error',onError);
+      window.removeEventListener('pagehide',persistPosition);
+      document.removeEventListener('visibilitychange',onHidden);
       hls?.destroy();
       elem.pause();
       elem.removeAttribute('src');

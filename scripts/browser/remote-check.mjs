@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {browser,sleep} from './browser.mjs';
+const screen=await browser(),phone=await browser(390,844),commands=[];
+const check=(name,condition)=>{assert.ok(condition,name);console.log('PASS',name);};
+phone.on('Network.webSocketFrameSent',event=>{try{const data=JSON.parse(event.response.payloadData);if(data.type==='command')commands.push(data.command);}catch{}});
+try{
+  await screen.go('/pair');
+  await screen.until('!!document.querySelector(".pair-qr img")');
+  const pair=await screen.evaluate('sessionStorage.cinera_remote_pair');
+  await phone.go('/remote?pair='+pair);
+  await phone.until('!!document.querySelector(".phone-remote-status.is-connected")');
+  await screen.until('!!document.querySelector(".pair-status.is-connected")');
+  check('Phone and screen pair through the live relay',true);
+  await phone.evaluate('document.querySelectorAll(".remote-nav button")[1].click()');
+  await screen.until('location.pathname==="/movies"');
+  check('Phone navigation reaches the screen',true);
+  commands.length=0;
+  const point=await phone.evaluate(`(()=>{const r=document.querySelector('.remote-trackpad').getBoundingClientRect();return {x:r.left+80,y:r.top+80};})()`);
+  const tap=async()=>{for(const type of ['mousePressed','mouseReleased'])await phone.send('Input.dispatchMouseEvent',{type,...point,button:'left',clickCount:1});};
+  await tap();await sleep(250);await tap();
+  await sleep(350);
+  check('Double tap sends playback once without a stray click',commands.length===1&&commands[0].action==='play_pause');
+  commands.length=0;
+  await phone.evaluate(`(()=>{const pad=document.querySelector('.remote-trackpad');pad.focus();pad.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));})()`);
+  await sleep(100);
+  check('Trackpad supports keyboard activation',commands.length===1&&commands[0].action==='pointer_click');
+  await phone.evaluate(`document.querySelector('[aria-label="Open TV keyboard"]').click()`);
+  await phone.until('!!document.querySelector(".remote-keyboard-drawer")');
+  await phone.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape'});
+  await phone.until('!document.querySelector(".remote-keyboard-drawer")');
+  check('Phone keyboard closes with Escape',true);
+  check('No remote JavaScript exceptions',screen.errors.length===0&&phone.errors.length===0);
+}finally{await phone.close();await screen.close();}

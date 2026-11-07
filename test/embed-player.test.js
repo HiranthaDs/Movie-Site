@@ -23,3 +23,14 @@ test('keeps Vidy embedded on PC and reserves full-page playback for confirmed TV
   assert.equal(shouldUseFullPagePlayer('iframe',true),true);
   assert.equal(shouldUseFullPagePlayer('video',true),false);
 });
+
+test('missing or malformed player positions cannot erase saved progress',()=>{
+  for(const value of [null,undefined,'',false,[],Infinity,-1]){
+    assert.deepEqual(parseEmbedPlayerMessage({event:'pause',currentTime:value,duration:value}),{event:'pause',currentTime:undefined,duration:undefined});
+  }
+  assert.equal(parseEmbedPlayerMessage({event:'timeupdate',currentTime:'42.5'}).currentTime,42.5);
+});
+
+test('starting over removes inherited resume positions and rejects nonfinite input',()=>{
+  for(const value of [0,-10,NaN,Infinity])assert.equal(embedUrlWithProgress('https://www.vidy.st/movie/1?progress=90',value),'https://www.vidy.st/movie/1');
+});

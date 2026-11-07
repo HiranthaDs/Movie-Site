@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers">
     <img src="https://img.shields.io/badge/Android_TV-optimized-3ddc84?logo=android&logoColor=white" alt="Android TV optimized">
     <img src="https://img.shields.io/badge/PWA-installable-ff3454" alt="Installable PWA">
-    <img src="https://img.shields.io/badge/tests-23_passing-13c99a" alt="23 tests passing">
+    <img src="https://img.shields.io/badge/tests-57_passing-13c99a" alt="57 tests passing">
   </p>
 </div>
 
@@ -91,7 +91,7 @@ The catalog uses TMDB metadata for discovery while keeping playback providers se
 | Details | Metadata, cast, seasons, episodes, trailers, recommendations, provider links |
 | Playback | MP4, HLS, iframe sources, server failover, resume progress, Data Saver |
 | Player tools | Start Over, sleep timer, Picture-in-Picture, autoplay next, sharing, shortcuts |
-| Personal | Watchlist, editable history, playback progress, local preferences |
+| Personal | Searchable watchlist, undo, exact episode resume, cross-tab sync, library backup import/export |
 | TV | Compact ten-foot layout, spatial focus navigation, Android/LG/Tizen remote keys, legacy browser fallback |
 | Phone remote | QR pairing, trackpad, cursor, focus gestures, keyboard, haptics, playback controls |
 | PWA | Installable manifest, offline shell, cache rotation, mobile home-screen support |
@@ -228,7 +228,22 @@ npm run validate
 
 The validation pipeline checks Worker syntax, runs deterministic tests, builds the production client and Worker bundles, validates asset routing, and performs a Wrangler deployment dry-run.
 
-Current suite: **23 passing tests** covering API behavior, source failover, Vidy event/resume compatibility, Android/LG TV detection, legacy remote keys, native HLS/fullscreen compatibility, CSP-safe legacy loading, gesture classification, acceleration, pointer clamping, and remote route validation.
+Current suite: **57 passing tests** covering API cancellation, retries and timeouts, discovery URLs, library validation and backup merging, offline caches, source failover, playback messages, native HLS/fullscreen compatibility, TV detection, remote gestures, and CSP-safe legacy loading.
+
+GitHub Actions runs this validation pipeline on pushes to main and pull requests. It uses the sample catalog and does not need production secrets.
+
+### Browser regression checks
+
+With Node.js 22+, run `npm run dev` and start a separate Chromium browser with remote debugging on port 9226. For example, in Windows PowerShell:
+
+```powershell
+Start-Process -FilePath "$env:ProgramFiles\Google\Chrome\Application\chrome.exe" -WindowStyle Hidden -ArgumentList '--headless=new', '--remote-debugging-port=9226', "--user-data-dir=$env:TEMP\cinera-browser-tests"
+npm run test:browser
+```
+
+The suite creates an isolated browser context, leaving ordinary browser storage untouched. Its **50 checks** cover library management, cross-tab sync, backup import/export, discovery, error recovery, focus, scroll restoration, mobile layouts, playback lifecycle, and the live phone remote relay. Playback events use deterministic fixtures; this does not certify third-party stream availability or physical TV hardware. Screenshots and downloaded fixtures go into the ignored `.audit/browser/` directory.
+
+Set `CINERA_TEST_URL` or `CINERA_CDP_URL` to use different app or browser-debugging endpoints. Browser tests are an additional local check and are separate from `npm run validate`.
 
 ## Deployment
 

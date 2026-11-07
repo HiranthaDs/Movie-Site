@@ -1,6 +1,6 @@
 // This file is copied directly to the build and is not transformed by Vite.
 // Keep it compatible with the same older TV browsers as the legacy app bundle.
-var VERSION='cinera-v5-tv-playback';
+var VERSION='cinera-v6-reliable-library';
 var SHELL_CACHE=VERSION+'-shell';
 var DATA_CACHE=VERSION+'-data';
 var APP_SHELL=[
@@ -63,32 +63,44 @@ function cachedFallback(cache,request,fallback){
 }
 
 function networkFirst(request,cacheName,fallback){
-  return caches.open(cacheName).then(function(cache){
-    return fetch(request).then(function(response){
-      if(!response.ok)return response;
-      return cache.put(request,response.clone()).then(function(){
-        return trimCache(cacheName,60);
-      }).then(function(){
-        return response;
+  // Every navigation serves the same SPA shell. Keep one copy instead of
+  // retaining search terms, pairing tokens, and a separate entry per title.
+  var cacheKey=request.mode==='navigate'?'/':request;
+  return fetch(request).then(function(response){
+    if(!response.ok)return response;
+    return caches.open(cacheName).then(function(cache){
+      return cache.put(cacheKey,response.clone()).then(function(){
+        if(cacheName===DATA_CACHE)return trimCache(cacheName,60);
       });
     }).catch(function(){
+      // A full or unavailable cache must never discard a working response.
+    }).then(function(){
+      return response;
+    });
+  },function(){
+    return caches.open(cacheName).then(function(cache){
       return cachedFallback(cache,request,fallback);
+    }).catch(function(){
+      return offlineResponse();
     });
   });
 }
 
-function staleWhileRevalidate(request){
-  return caches.open(SHELL_CACHE).then(function(cache){
-    return cache.match(request).then(function(cached){
-      var network=fetch(request).then(function(response){
-        if(response.ok)cache.put(request,response.clone()).catch(function(){});
-        return response;
-      }).catch(function(){
-        return cached||offlineResponse();
-      });
-      return cached||network;
-    });
+function staleWhileRevalidate(request,event){
+  var storage=caches.open(SHELL_CACHE).catch(function(){return null;});
+  var cached=storage.then(function(cache){
+    return cache?cache.match(request).catch(function(){return null;}):null;
   });
+  // Start the network independently of storage, and keep background writes alive
+  // after a cached response has already been delivered to the page.
+  var network=fetch(request).then(function(response){
+    return storage.then(function(cache){
+      if(!cache||!response.ok)return response;
+      return cache.put(request,response.clone()).catch(function(){}).then(function(){return response;});
+    });
+  }).catch(function(){return cached.then(function(response){return response||offlineResponse();});});
+  event.waitUntil(network.then(function(){}));
+  return cached.then(function(response){return response||network;});
 }
 
 self.addEventListener('fetch',function(event){
@@ -96,6 +108,14 @@ self.addEventListener('fetch',function(event){
   if(request.method!=='GET')return;
   var url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
+  // Pairing responses are private and source URLs can expire. Neither belongs
+  // in the offline catalog cache, even when the network is unavailable.
+  if(/^\/api\/(remote|sources)(\/|$)/.test(url.pathname)){
+    event.respondWith(fetch(request,{cache:'no-store'}).catch(function(){
+      return offlineResponse();
+    }));
+    return;
+  }
   if(url.pathname.startsWith('/api/')){
     event.respondWith(networkFirst(request,DATA_CACHE));
     return;
@@ -104,7 +124,7 @@ self.addEventListener('fetch',function(event){
     event.respondWith(networkFirst(request,SHELL_CACHE,'/'));
     return;
   }
-  if(['script','style','font','image','manifest'].indexOf(request.destination)!==-1)event.respondWith(staleWhileRevalidate(request));
+  if(['script','style','font','image','manifest'].indexOf(request.destination)!==-1)event.respondWith(staleWhileRevalidate(request,event));
 });
 
 self.addEventListener('message',function(event){

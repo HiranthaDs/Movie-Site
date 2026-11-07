@@ -10,6 +10,7 @@
     "deploy": "npm run build && wrangler deploy --keep-vars --secrets-file .env",
     "check": "node --check worker/index.js && node --check worker/catalog.js && node --check worker/seed.js && node --check worker/sources.js",
     "test": "node --test",
+    "test:browser": "node scripts/browser/run.mjs",
     "validate": "npm run check && npm test && npm run build && wrangler deploy --dry-run"
   },
   "dependencies": {

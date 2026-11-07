@@ -1,19 +1,43 @@
 import React,{useEffect,useState} from 'react';
-import {Link,useParams,useNavigate} from 'react-router-dom';
-import {Play,Plus,Check,ArrowLeft,ExternalLink,Clapperboard,Star,Calendar,Globe} from 'lucide-react';
+import {Link,useParams} from 'react-router-dom';
+import {Play,Plus,Check,ArrowLeft,ExternalLink,Clapperboard,Star} from 'lucide-react';
 import {api,img,truncated} from '../lib/api';
 import {useStore} from '../lib/store';
+import {resumePath} from '../lib/library';
 import {Card,Poster,MetaLine,ErrorPanel,Skeletons} from '../components/UI';
 export default function Details(){
-  const {kind,id}=useParams();const navigate=useNavigate();
+  const {kind,id}=useParams();
   const [data,setData]=useState(null),[error,setError]=useState('');
   const [season,setSeason]=useState(1),[seasonData,setSeasonData]=useState(null);
-  const {toggleSaved,isSaved}=useStore();
-  useEffect(()=>{const ctrl=new AbortController();setData(null);setError('');setSeason(1);api(`/api/title/${kind}/${id}`,ctrl.signal).then(setData).catch(e=>{if(e.name!=='AbortError')setError(e.message);});return()=>ctrl.abort();},[kind,id]);
-  useEffect(()=>{if(kind!=='tv'||!data)return;let live=true;setSeasonData(null);api(`/api/season/${id}/${season}`).then(d=>{if(live)setSeasonData(d);}).catch(()=>{});return()=>{live=false;};},[kind,id,season,data]);
-  if(error)return <div className="content-width detail-error"><ErrorPanel message={error}/></div>;
+  const [titleAttempt,setTitleAttempt]=useState(0),[seasonAttempt,setSeasonAttempt]=useState(0),[seasonError,setSeasonError]=useState('');
+  const {toggleSaved,isSaved,history,getProgress}=useStore();
+  useEffect(()=>{
+    const ctrl=new AbortController();setData(null);setError('');setSeason(1);setSeasonData(null);setSeasonError('');
+    api(`/api/title/${kind}/${id}`,ctrl.signal,{fresh:titleAttempt>0}).then(next=>{
+      if(ctrl.signal.aborted)return;
+      if(!next||next.kind!==kind||Number(next.id)!==Number(id)||!next.title)throw new Error('This title could not be loaded. Please try again.');
+      setData(next);
+      setSeason(next.seasonList?.find(entry=>entry.season_number>0)?.season_number||1);
+    }).catch(e=>{if(!ctrl.signal.aborted&&e.name!=='AbortError')setError(e.message);});
+    return()=>ctrl.abort();
+  },[kind,id,titleAttempt]);
+  useEffect(()=>{
+    if(kind!=='tv'||!data||Number(data.id)!==Number(id)||data.kind!==kind)return;
+    const ctrl=new AbortController();setSeasonData(null);setSeasonError('');
+    api(`/api/season/${id}/${season}`,ctrl.signal,{fresh:seasonAttempt>0}).then(next=>{
+      if(!ctrl.signal.aborted)setSeasonData({...next,forSeason:season});
+    }).catch(e=>{if(!ctrl.signal.aborted&&e.name!=='AbortError')setSeasonError(e.message);});
+    return()=>ctrl.abort();
+  },[kind,id,season,data,seasonAttempt]);
+  useEffect(()=>{if(data&&data.kind===kind&&Number(data.id)===Number(id))document.title=`${data.title} | Cinera`;},[data,id,kind]);
+  if(error)return <div className="content-width detail-error"><ErrorPanel message={error} onRetry={()=>setTitleAttempt(value=>value+1)}/></div>;
   if(!data)return <div className="content-width detail-loading"><div role="status" aria-busy="true"><span className="sr-only">Loading title details…</span><div className="detail-loading-layout" aria-hidden="true"><div className="skeleton skeleton-poster"><Clapperboard className="skeleton-poster-mark" size={32}/></div><div className="detail-loading-copy"><div className="skeleton hero-skeleton-eyebrow"/><div className="hero-skeleton-title"><span className="skeleton"/><span className="skeleton"/></div><div className="hero-skeleton-description"><span className="skeleton"/><span className="skeleton"/><span className="skeleton"/></div><div className="hero-buttons hero-skeleton-actions"><span className="skeleton"/><span className="skeleton"/></div></div></div></div><Skeletons count={6}/></div>;
   const saved=isSaved(data);
+  const lastWatch=history.find(entry=>entry.kind===kind&&Number(entry.id)===Number(id));
+  const resumeItem=lastWatch||data;
+  const position=getProgress(resumeItem,resumeItem.season||1,resumeItem.episode||1);
+  const canResume=position?.seconds>0&&(!position.duration||position.seconds<position.duration-10);
+  const episodes=Array.isArray(seasonData?.episodes)?seasonData.episodes:[];
   const trailer=data.videos?.find(v=>v.type==='Trailer')||data.videos?.[0];
   const provider=data.providers&&typeof data.providers==='object'&&!Array.isArray(data.providers)?data.providers:null;
   return <>
@@ -21,13 +45,13 @@ export default function Details(){
       <div className="detail-backdrop" style={data.backdrop?{backgroundImage:`url('${img(data.backdrop,'original')}')`}:{}}/>
       <div className="content-width detail-hero-inner"><Link className="back-link" to="/"><ArrowLeft size={16}/> Back to home</Link>
         <div className="detail-title-row"><div className="detail-poster"><Poster item={data}/></div><div className="detail-info"><span className="detail-eyebrow">{data.kind==='movie'?'FEATURE FILM':'ORIGINAL SERIES'} <span className="badge-separator">/</span> {data.status||'Available in catalog'}</span><h1>{data.title}</h1>{data.tagline&&<p className="detail-tagline">{data.tagline}</p>}<MetaLine item={data} includeRuntime/>
-        <p className="detail-overview">{data.overview}</p><div className="detail-actions"><Link to={`/watch/${kind}/${id}`} className="button button-primary button-large"><Play size={18} fill="currentColor"/> Watch Options</Link><button className="button button-glass button-large" onClick={()=>toggleSaved(data)}>{saved?<Check size={18}/>:<Plus size={18}/>} {saved?'In My List':'Add to My List'}</button>{trailer&&<a className="button button-outline button-large" href={`https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}`} target="_blank" rel="noreferrer"><Clapperboard size={18}/> Trailer</a>}</div></div></div>
+        <p className="detail-overview">{data.overview}</p><div className="detail-actions"><Link to={canResume?resumePath(resumeItem):`/watch/${kind}/${id}`} className="button button-primary button-large"><Play size={18} fill="currentColor"/> {canResume?(kind==='tv'?`Resume S${resumeItem.season||1} · E${resumeItem.episode||1}`:'Resume watching'):'Watch options'}</Link><button className="button button-glass button-large" aria-pressed={saved} onClick={()=>toggleSaved(data)}>{saved?<Check size={18}/>:<Plus size={18}/>} {saved?'In My List':'Add to My List'}</button>{trailer&&<a className="button button-outline button-large" href={`https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}`} target="_blank" rel="noreferrer"><Clapperboard size={18}/> Trailer</a>}</div></div></div>
       </div>
     </div>
     <div className="content-width detail-content"><div className="detail-primary">
       <div className="detail-description-block"><div className="section-title-wrap"><span className="section-title-marker"/><h2>Storyline</h2></div><p>{data.overview}</p></div>
       {kind==='tv'&&<section className="episodes-section"><div className="episode-heading"><div className="section-title-wrap"><span className="section-title-marker"/><h2>Episodes</h2></div><label>Season <select aria-label="Select season" value={season} onChange={e=>setSeason(Number(e.target.value))}>{(data.seasonList?.length?data.seasonList:[{season_number:1,name:'Season 1'}]).map(s=><option key={s.season_number} value={s.season_number}>{s.name}</option>)}</select></label></div>
-        {!seasonData?<div className="episodes-loading">Loading episodes...</div>:<div className="episode-list">{seasonData.episodes.map(ep=><Link to={`/watch/tv/${id}?season=${season}&episode=${ep.episode_number}`} className="episode-row" key={ep.id}>
+        {seasonError?<ErrorPanel message={`Episodes could not load. ${seasonError}`} onRetry={()=>setSeasonAttempt(value=>value+1)}/>:!seasonData||seasonData.forSeason!==season?<div className="episodes-loading" role="status" aria-live="polite">Loading episodes…</div>:!episodes.length?<div className="episodes-loading" role="status">No episodes are listed for this season yet. Try another season.</div>:<div className="episode-list">{episodes.map(ep=><Link to={`/watch/tv/${id}?season=${season}&episode=${ep.episode_number}`} className="episode-row" key={ep.id}>
           <div className="episode-art">{ep.still_path?<img src={img(ep.still_path,'w300')} alt=""/>:<Clapperboard size={24}/>}<span className="episode-play"><Play size={16} fill="currentColor"/></span></div>
           <div className="episode-main"><div className="episode-name"><span>{String(ep.episode_number).padStart(2,'0')}</span><h3>{ep.name}</h3></div><p>{truncated(ep.overview||'Explore this episode.',145)}</p></div><span className="episode-runtime">{ep.runtime?`${ep.runtime}m`:''}</span></Link>)}</div>}
       </section>}

@@ -8,19 +8,24 @@ export function parseEmbedPlayerMessage(input){
   if(!['play','pause','ended','timeupdate'].includes(body.event))return null;
   const rawTime=body.currentTime??body.timestamp;
   const rawDuration=body.duration;
-  const currentTime=Number(rawTime);
-  const duration=Number(rawDuration);
+  const seconds=value=>{
+    if(typeof value!=='number'&&(typeof value!=='string'||!value.trim()))return undefined;
+    const number=Number(value);
+    return Number.isFinite(number)&&number>=0&&number<=Number.MAX_SAFE_INTEGER?number:undefined;
+  };
   return {
     event:body.event,
-    currentTime:Number.isFinite(currentTime)&&currentTime>=0?currentTime:undefined,
-    duration:Number.isFinite(duration)&&duration>=0?duration:undefined,
+    currentTime:seconds(rawTime),
+    duration:seconds(rawDuration),
   };
 }
 
 export function embedUrlWithProgress(sourceUrl,resume=0){
   const url=new URL(sourceUrl);
-  const seconds=Math.floor(Number(resume)||0);
+  const value=Number(resume);
+  const seconds=Number.isFinite(value)&&value>0?Math.floor(Math.min(value,Number.MAX_SAFE_INTEGER)):0;
   if(seconds>0)url.searchParams.set('progress',String(seconds));
+  else url.searchParams.delete('progress');
   return url.toString();
 }
 

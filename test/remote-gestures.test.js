@@ -19,3 +19,9 @@ test('moves and clamps the TV pointer inside the viewport',()=>{
   assert.deepEqual(nextPointerPosition({x:100,y:100},{dx:20,dy:-10},{width:500,height:300},2),{x:140,y:80});
   assert.deepEqual(nextPointerPosition({x:490,y:10},{dx:100,dy:-100},{width:500,height:300},2),{x:482,y:18});
 });
+
+test('keeps the pointer finite and inside tiny or malformed viewports',()=>{
+  assert.deepEqual(nextPointerPosition(null,{dx:Infinity,dy:NaN},{width:10,height:4}),{x:5,y:2});
+  assert.deepEqual(nextPointerPosition(null,null,{width:Infinity,height:-10}),{x:0.5,y:0.5});
+  assert.deepEqual(nextPointerPosition({x:100,y:100},{dx:10,dy:10},{width:500,height:300},Infinity),{x:116.5,y:116.5});
+});

@@ -3,6 +3,7 @@ import {useSearchParams} from 'react-router-dom';
 import {ChevronLeft,CornerDownLeft,Delete,Expand,Heart,Home,Keyboard,Menu,Minus,MonitorPlay,MousePointer2,Move,Pause,Play,Plus,RotateCcw,Search,SkipBack,SkipForward,Volume2,VolumeX,X} from 'lucide-react';
 import {remoteSocketUrl} from '../lib/remote';
 import {gestureDirection,gestureRepeatCount} from '../lib/remoteGestures';
+import {useModalFocus} from '../lib/useModalFocus';
 
 const navItems=[['/',Home,'Home'],['/movies',MonitorPlay,'Movies'],['/series',Play,'Series'],['/search',Search,'Search'],['/watchlist',Heart,'My list']];
 const keyRows=[
@@ -22,6 +23,10 @@ export default function PhoneRemote(){
   const [keyboardOpen,setKeyboardOpen]=useState(false),[keyboardText,setKeyboardText]=useState(''),[shift,setShift]=useState(false);
   const socketRef=useRef(null),reconnectRef=useRef(null),wakeLockRef=useRef(null),heartbeatRef=useRef(null),attemptRef=useRef(0);
   const gestureRef=useRef(null),tapRef=useRef({at:0,timer:null}),frameRef=useRef(null),queuedPointerRef=useRef({dx:0,dy:0}),lastMoveHapticRef=useRef(0),typingAtRef=useRef(0),keyboardInputRef=useRef(null);
+  const gestureTimersRef=useRef(new Set());
+  const keyboardDialogRef=useRef(null);
+  const closeKeyboard=useCallback(()=>setKeyboardOpen(false),[]);
+  useModalFocus(keyboardOpen,keyboardDialogRef,closeKeyboard);
 
   const haptic=useCallback(kind=>{
     if(!navigator.vibrate)return;
@@ -62,7 +67,11 @@ export default function PhoneRemote(){
     const visible=()=>{if(document.visibilityState==='visible')requestWakeLock();};
     document.addEventListener('visibilitychange',visible);
     return()=>{
+      clearTimeout(gestureRef.current?.longTimer);gestureRef.current=null;
+      gestureTimersRef.current.forEach(clearTimeout);gestureTimersRef.current.clear();
+      queuedPointerRef.current={dx:0,dy:0};
       stopped=true;document.removeEventListener('visibilitychange',visible);clearTimeout(reconnectRef.current);clearInterval(heartbeatRef.current);clearTimeout(tapRef.current.timer);cancelAnimationFrame(frameRef.current);socketRef.current?.close();wakeLockRef.current?.release?.();wakeLockRef.current=null;
+      tapRef.current={at:0,timer:null};frameRef.current=null;
     };
   },[haptic,pair,requestWakeLock,valid]);
   useEffect(connect,[connect]);
@@ -87,6 +96,7 @@ export default function PhoneRemote(){
 
   const trackDown=event=>{
     if(event.button!==undefined&&event.button!==0)return;
+    if(gestureRef.current)return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const rect=event.currentTarget.getBoundingClientRect();
     const state={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,lastX:event.clientX,lastY:event.clientY,anchorX:event.clientX,anchorY:event.clientY,moved:false,long:false,scroll:event.clientX>rect.right-42,rect};
@@ -114,7 +124,7 @@ export default function PhoneRemote(){
     if(state.long)return;
     if(trackMode==='focus'&&state.moved){
       const key=gestureDirection(dx,dy,28);
-      if(key){const count=gestureRepeatCount(dx,dy,44,4);for(let index=0;index<count;index+=1)setTimeout(()=>send({action:'key',key},index===0?'select':null),index*54);}
+      if(key){const count=gestureRepeatCount(dx,dy,44,4);for(let index=0;index<count;index+=1){const timer=setTimeout(()=>{gestureTimersRef.current.delete(timer);send({action:'key',key},index===0?'select':null);},index*54);gestureTimersRef.current.add(timer);}}
       return;
     }
     if(state.moved||state.scroll)return;
@@ -122,7 +132,7 @@ export default function PhoneRemote(){
     if(now-tapRef.current.at<290){clearTimeout(tapRef.current.timer);tapRef.current={at:0,timer:null};send({action:'play_pause'},'heavy');}
     else{
       tapRef.current.at=now;
-      tapRef.current.timer=setTimeout(()=>{send(trackMode==='pointer'?{action:'pointer_click'}:{action:'key',key:'Enter'},'select');tapRef.current.at=0;},220);
+      tapRef.current.timer=setTimeout(()=>{send(trackMode==='pointer'?{action:'pointer_click'}:{action:'key',key:'Enter'},'select');tapRef.current.at=0;},290);
     }
   };
   const cancelTrack=event=>{const state=gestureRef.current;if(state?.pointerId===event.pointerId){clearTimeout(state.longTimer);gestureRef.current=null;setTrackActive(false);setFinger(null);}};
@@ -150,7 +160,7 @@ export default function PhoneRemote(){
 
       <section className="remote-trackpad-shell" aria-label="Advanced TV trackpad">
         <div className="trackpad-heading"><div><small>TOUCH CONTROL</small><strong>{trackMode==='pointer'?(screenState.pointerTarget||'Move the TV pointer'):'Swipe between TV controls'}</strong></div><div className="track-mode"><button className={trackMode==='pointer'?'active':''} onClick={()=>{setTrackMode('pointer');haptic('select');}}><MousePointer2/> Pointer</button><button className={trackMode==='focus'?'active':''} onClick={()=>{setTrackMode('focus');haptic('select');}}><Move/> Focus</button></div></div>
-        <div className={`remote-trackpad ${trackActive?'is-active':''} mode-${trackMode}`} role="button" tabIndex="0" aria-label={trackMode==='pointer'?'Drag to move the TV pointer, tap to select':'Swipe to move focus, tap to select'} onPointerDown={trackDown} onPointerMove={trackMove} onPointerUp={trackEnd} onPointerCancel={cancelTrack} onContextMenu={event=>event.preventDefault()}>
+        <div className={`remote-trackpad ${trackActive?'is-active':''} mode-${trackMode}`} role="button" tabIndex="0" aria-label={trackMode==='pointer'?'Drag to move the TV pointer, tap to select':'Swipe to move focus, tap to select'} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(!event.repeat)send(trackMode==='pointer'?{action:'pointer_click'}:{action:'key',key:'Enter'},'select');}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();send({action:'key',key:event.key},'move');}}} onPointerDown={trackDown} onPointerMove={trackMove} onPointerUp={trackEnd} onPointerCancel={cancelTrack} onContextMenu={event=>event.preventDefault()}>
           <div className="trackpad-surface-lines"/><div className="trackpad-center"><MousePointer2/><span>{trackMode==='pointer'?'DRAG · TAP':'SWIPE · SELECT'}</span><small>Double tap to play or pause</small></div><div className="trackpad-scroll-rail"><i/> SCROLL</div>
           {finger&&<span className="trackpad-finger" style={{transform:`translate3d(${finger.x}px,${finger.y}px,0)`}}/>}
         </div>
@@ -161,9 +171,9 @@ export default function PhoneRemote(){
       <nav className="remote-nav" aria-label="Open a TV section">{navItems.map(([path,Icon,label])=><button key={path} onClick={()=>send({action:'navigate',path})}><Icon/><span>{label}</span></button>)}</nav>
     </main>
 
-    {keyboardOpen&&<div className="remote-keyboard-backdrop" onPointerDown={event=>{if(event.target===event.currentTarget)setKeyboardOpen(false);}}><section className="remote-keyboard-drawer" role="dialog" aria-modal="true" aria-labelledby="remote-keyboard-title">
+    {keyboardOpen&&<div className="remote-keyboard-backdrop" onPointerDown={event=>{if(event.target===event.currentTarget)setKeyboardOpen(false);}}><section ref={keyboardDialogRef} className="remote-keyboard-drawer" role="dialog" aria-modal="true" aria-labelledby="remote-keyboard-title">
       <div className="remote-keyboard-heading"><div><small>TYPE ON YOUR TV</small><strong id="remote-keyboard-title">{screenState.inputLabel||'Cinera search'}</strong></div><button onClick={()=>setKeyboardOpen(false)} aria-label="Close keyboard"><X/></button></div>
-      <div className="remote-keyboard-input"><Search/><input ref={keyboardInputRef} value={keyboardText} onChange={event=>updateText(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();submitText();}}} placeholder="Type with your phone or the keys below" autoComplete="off" enterKeyHint="search"/><button onClick={()=>updateText(keyboardText.slice(0,-1))} aria-label="Delete last character"><Delete/></button></div>
+      <div className="remote-keyboard-input"><Search/><input aria-label="Text to send to the TV" ref={keyboardInputRef} value={keyboardText} onChange={event=>updateText(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();submitText();}}} placeholder="Type with your phone or the keys below" autoComplete="off" enterKeyHint="search"/><button onClick={()=>updateText(keyboardText.slice(0,-1))} aria-label="Delete last character"><Delete/></button></div>
       <div className="remote-keyboard-keys">{keyRows.map((row,index)=><div key={index}>{row.map(key=><button key={key} onClick={()=>pressKey(key)}>{shift?key:key.toLowerCase()}</button>)}</div>)}<div className="remote-keyboard-special"><button className={shift?'is-active':''} onClick={()=>{setShift(value=>!value);haptic('tap');}}>SHIFT</button><button className="key-space" onClick={()=>updateText(`${keyboardText} `)}>SPACE</button><button onClick={()=>updateText('')}>CLEAR</button><button className="key-enter" onClick={submitText}><CornerDownLeft/> SEARCH</button></div></div>
     </section></div>}
   </div>;

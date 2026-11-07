@@ -5,6 +5,8 @@ import {useStore} from '../lib/store';
 import {usePwaInstall} from '../lib/pwa';
 import {shouldHideWatchHeader} from '../lib/headerVisibility';
 import SmartSearch from './SmartSearch';
+import {ConnectionNotice,ToastViewport} from './AppFeedback';
+import RouteEffects from './RouteEffects';
 
 const links=[
   {to:'/',label:'Home',caption:'Featured stories',icon:House},
@@ -22,6 +24,17 @@ function SiteHeader(){
   const searchDialog=useRef(null),searchTrigger=useRef(null),menuTrigger=useRef(null);
   useEffect(()=>{const update=()=>{setScrolled(window.scrollY>22);setWatchHeaderHidden(shouldHideWatchHeader(location.pathname,window.scrollY));};update();window.addEventListener('scroll',update,{passive:true});return()=>window.removeEventListener('scroll',update);},[location.pathname]);
   useEffect(()=>{setMenuOpen(false);setSearchOpen(false);},[location.pathname,location.search]);
+  useEffect(()=>{
+    const shortcut=event=>{
+      const typing=event.target?.closest?.('input,textarea,select,[contenteditable="true"]');
+      const command=(event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k';
+      const slash=event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!location.pathname.startsWith('/watch/');
+      if(event.defaultPrevented||event.repeat||event.isComposing||typing||(!command&&!slash)||document.querySelector('[role="dialog"]'))return;
+      event.preventDefault();setMenuOpen(false);setSearchOpen(true);
+    };
+    window.addEventListener('keydown',shortcut);
+    return()=>window.removeEventListener('keydown',shortcut);
+  },[location.pathname]);
   useEffect(()=>{document.body.classList.toggle('menu-is-open',menuOpen||searchOpen);return()=>document.body.classList.remove('menu-is-open');},[menuOpen,searchOpen]);
   useEffect(()=>{
     if(!searchOpen&&!menuOpen)return;
@@ -32,9 +45,10 @@ function SiteHeader(){
     const keydown=event=>{
       if(event.key==='Escape'){setSearchOpen(false);setMenuOpen(false);(searchOpen?searchTrigger:menuTrigger).current?.focus();}
       if(event.key==='Tab'){
-        const nodes=[...(menuOpen?[menuTrigger.current]:[]),...panel.querySelectorAll('button:not([disabled]):not([tabindex="-1"]),a,input,select')].filter(Boolean);
+        const nodes=[...(menuOpen?[menuTrigger.current]:[]),...panel.querySelectorAll('button:not([disabled]):not([tabindex="-1"]),a,input,select')].filter(node=>node&&node.getClientRects().length&&getComputedStyle(node).visibility!=='hidden'&&getComputedStyle(node).display!=='none');
         const first=nodes[0],last=nodes[nodes.length-1];
-        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        if(!nodes.includes(document.activeElement)){event.preventDefault();(event.shiftKey?last:first)?.focus();}
+        else if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
         else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
       }
     };
@@ -56,7 +70,7 @@ function SiteHeader(){
       <Link to="/" className="brand" aria-label="Cinera home"><span className="brand-mark"><Play size={18} fill="currentColor"/></span><span className="brand-word">CINERA</span></Link>
       <div className="header-center"><span className="live-dot"/> CINEMA · EVERYWHERE</div>
       <div className="header-actions">
-        <button ref={searchTrigger} className="header-search-trigger" aria-label="Search the catalog" aria-expanded={searchOpen} aria-controls="catalog-search" onClick={()=>{setMenuOpen(false);setSearchOpen(value=>!value);}}>{searchOpen?<X size={21}/>:<Search size={21}/>}</button>
+        <button ref={searchTrigger} className="header-search-trigger" aria-label="Search the catalog" title="Search (Ctrl / ⌘ K)" aria-keyshortcuts="Control+k Meta+k /" aria-expanded={searchOpen} aria-controls="catalog-search" onClick={()=>{setMenuOpen(false);setSearchOpen(value=>!value);}}>{searchOpen?<X size={21}/>:<Search size={21}/>}</button>
         <Link to="/pair" className="remote-pair-link" aria-label="Pair phone remote"><Gamepad2 size={19}/><span>Remote</span></Link>
         <Link to="/discover" className="header-cta">Find a movie <ArrowUpRight size={17}/></Link>
         <button ref={menuTrigger} className="menu-toggle" onClick={()=>{setSearchOpen(false);setMenuOpen(value=>!value);}} aria-label={menuOpen?'Close navigation menu':'Open navigation menu'} aria-expanded={menuOpen} aria-controls="main-menu"><strong>{menuOpen?'CLOSE':'MENU'}</strong>{menuOpen?<X size={25}/>:<Menu size={25}/>}</button>
@@ -71,7 +85,6 @@ function Footer(){return <footer className="site-footer"><div className="footer-
 
 export default function SiteLayout({children}){
   const location=useLocation();
-  useEffect(()=>{window.scrollTo({top:0,behavior:'auto'});},[location.pathname,location.search]);
-  if(location.pathname==='/remote')return <div className="remote-app-shell"><main id="main-content">{children}</main></div>;
-  return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><main id="main-content">{children}</main><Footer/><nav className="mobile-bottom-nav">{links.filter((_,index)=>index!==3).map(({to,label,icon:Icon})=><NavLink to={to} key={to} end={to==='/' }><Icon size={20}/><span>{label==='TV series'?'Series':label}</span></NavLink>)}</nav></div>;
+  if(location.pathname==='/remote')return <div className="remote-app-shell"><RouteEffects/><main id="main-content" tabIndex={-1}>{children}</main><ToastViewport/></div>;
+  return <div className="app-shell"><RouteEffects/><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><ConnectionNotice/><main id="main-content" tabIndex={-1}>{children}</main><Footer/><nav className="mobile-bottom-nav" aria-label="Main navigation">{links.filter((_,index)=>index!==3).map(({to,label,icon:Icon})=><NavLink to={to} key={to} end={to==='/' }><Icon size={20}/><span>{label==='TV series'?'Series':label}</span></NavLink>)}</nav><ToastViewport/></div>;
 }
