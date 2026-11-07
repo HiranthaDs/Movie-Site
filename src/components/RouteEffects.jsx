@@ -1,7 +1,7 @@
 import {useEffect,useLayoutEffect,useRef} from 'react';
 import {useLocation,useNavigationType} from 'react-router-dom';
 
-const pageTitles={'/':'Find your next story','/movies':'Movies','/series':'TV series','/discover':'Discover','/search':'Search','/watchlist':'My list','/pair':'Pair a remote','/remote':'Phone remote'};
+const pageTitles={'/':'Find your next story','/movies':'Movies','/series':'TV series','/discover':'Discover','/search':'Search','/watchlist':'My list','/android':'Free Android app & setup guide','/pair':'Pair a remote','/remote':'Phone remote'};
 
 export default function RouteEffects(){
   const location=useLocation(),navigation=useNavigationType();

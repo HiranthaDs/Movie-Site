@@ -95,6 +95,7 @@ The catalog uses TMDB metadata for discovery while keeping playback providers se
 | TV | Compact ten-foot layout, spatial focus navigation, Android/LG/Tizen remote keys, legacy browser fallback |
 | Phone remote | QR pairing, trackpad, cursor, focus gestures, keyboard, haptics, playback controls |
 | PWA | Installable manifest, offline shell, cache rotation, mobile home-screen support |
+| Android app | Free TV APK download page, waving mascot, QR downloads, device setup guides, and compatibility FAQs |
 
 ## Architecture
 
@@ -241,7 +242,7 @@ Start-Process -FilePath "$env:ProgramFiles\Google\Chrome\Application\chrome.exe"
 npm run test:browser
 ```
 
-The suite creates an isolated browser context, leaving ordinary browser storage untouched. Its **50 checks** cover library management, cross-tab sync, backup import/export, discovery, error recovery, focus, scroll restoration, mobile layouts, playback lifecycle, and the live phone remote relay. Playback events use deterministic fixtures; this does not certify third-party stream availability or physical TV hardware. Screenshots and downloaded fixtures go into the ignored `.audit/browser/` directory.
+The suite creates an isolated browser context, leaving ordinary browser storage untouched. Its **73 checks** cover library management, cross-tab sync, backup import/export, discovery, error recovery, focus, scroll restoration, mobile layouts, playback lifecycle, the live phone remote relay, and the Android download page. Android checks include device guides, download links, QR rendering, animation controls, mobile navigation, and TV layouts up to 4K. Playback events use deterministic fixtures; this does not certify third-party stream availability or physical TV hardware. Screenshots and downloaded fixtures go into the ignored `.audit/browser/` directory.
 
 Set `CINERA_TEST_URL` or `CINERA_CDP_URL` to use different app or browser-debugging endpoints. Browser tests are an additional local check and are separate from `npm run validate`.
 

@@ -12,6 +12,7 @@ import './hich-theme.css';
 import './device.css';
 import './features.css';
 import './experience.css';
+import './android-shared.css';
 
 const Home=lazy(()=>import('./pages/Home'));
 const Browse=lazy(()=>import('./pages/Browse'));
@@ -21,6 +22,7 @@ const Watch=lazy(()=>import('./pages/Watch'));
 const Watchlist=lazy(()=>import('./pages/Watchlist'));
 const PairRemote=lazy(()=>import('./pages/PairRemote'));
 const PhoneRemote=lazy(()=>import('./pages/PhoneRemote'));
+const AndroidApp=lazy(()=>import('./pages/AndroidApp'));
 
 function PageLoader(){return <div className="route-loader" role="status"><span/><strong>Loading your next story…</strong></div>;}
 function NotFound(){return <div className="content-width not-found"><h1>404</h1><p>The page you're looking for doesn't exist.</p><a className="button button-primary" href="/">Back to home</a></div>;}
@@ -44,6 +46,7 @@ function App(){return <StoreProvider><BrowserRouter><RemoteProvider><SiteLayout>
   <Route path="/watchlist" element={<Watchlist/>}/>
   <Route path="/pair" element={<PairRemote/>}/>
   <Route path="/remote" element={<PhoneRemote/>}/>
+  <Route path="/android" element={<AndroidApp/>}/>
   <Route path="*" element={<NotFound/>}/>
 </Routes></Suspense></SiteLayout></RemoteProvider></BrowserRouter></StoreProvider>;}
 initializePwa();
