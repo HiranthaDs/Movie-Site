@@ -1,0 +1,83 @@
+.android-character-hero{display:grid;grid-template-columns: .9fr 1.1fr;align-items:center;gap:0;min-height:690px;padding-block:30px 45px;position:relative}
+.android-character-hero .android-hero-copy{position:relative;z-index:2;padding-block:40px}
+.android-character-hero .android-hero-copy>.android-eyebrow{margin-bottom:30px}
+.android-page .android-character-hero h1{font-size:clamp(54px,6.3vw,100px);line-height:1.03;letter-spacing:-.025em}
+.android-character-hero h1>span{display:block;color:#5a883d}
+.android-character-hero .android-hero-description{max-width:405px;font-size:14px;line-height:1.9;margin-top:26px!important}
+.android-character-hero .android-hero-actions{margin-top:28px;gap:22px}
+.android-hero-promise{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;font-size:10px;font-weight:500;color:#6a7468;margin-top:35px}
+.android-hero-promise>span+span:before{content:'';display:inline-block;width:3px;height:3px;vertical-align:middle;border-radius:50%;background:#829078;margin-right:20px}
+.android-character{position:relative;align-self:stretch;min-width:0;display:flex;flex-direction:column;justify-content:center;isolation:isolate}
+.android-hello-word{position:absolute;top:7%;left:3%;right:0;z-index:-1;text-align:center;font-size:clamp(120px,17vw,270px);font-family:var(--heading);line-height:1;letter-spacing:-.055em;color:#e3ead8;user-select:none}
+.android-robot-scene{position:relative;width:100%;height:570px;background:none;border:0;border-radius:0;box-shadow:none}
+.android-robot-canvas{position:absolute;inset:0;touch-action:pan-y}
+.android-robot-canvas canvas{display:block;width:100%;height:100%;opacity:1;transition:opacity .25s}
+.android-robot-scene[data-state=loading] canvas,.android-robot-scene[data-state=fallback] canvas{visibility:hidden}
+.android-robot-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.android-robot-fallback .android-mascot{width:88%;height:100%;max-width:490px}
+.android-character-caption{text-align:center;position:relative;z-index:1;margin-top:-5px;min-height:78px}
+.android-page .android-robot-greeting{min-height:21px;font-size:11px;line-height:1.7;color:#67765d;letter-spacing:.01em;padding-inline:8px}
+.android-character-controls{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:9px}
+.android-character-controls button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:44px;min-height:44px;border:0;border-radius:50%;background:transparent;color:#49633b;transition:background .2s}
+.android-character-controls button:hover{background:#e7eddc}
+.android-character-controls .android-greet-button{padding-inline:15px;font-size:11px;font-weight:600;border-radius:999px;background:#eaf0df;margin-right:3px}
+.android-character-controls .android-greet-button:hover{background:#dcebc9}
+.android-character-controls .android-motion-toggle{width:44px;height:44px}
+.android-qr-card{transform:none}
+@media(min-width:1800px){
+  .android-character-hero{min-height:780px;padding-block:40px 60px}
+  .android-robot-scene{height:660px}
+  .android-character-hero .android-hero-description{font-size:17px;max-width:480px}
+  .android-hero-promise{font-size:12px;margin-top:40px}
+  .android-page .android-robot-greeting{font-size:13px}
+}
+@media(max-width:1100px){
+  .android-character-hero{min-height:590px;grid-template-columns:.95fr 1.05fr;padding-block:20px 35px}
+  .android-robot-scene{height:490px}
+  .android-page .android-character-hero h1{font-size:6.4vw}
+  .android-character-hero .android-hero-actions{gap:12px}
+  .android-character-hero .android-hero-description{font-size:13px}
+  .android-hello-word{top:13%}
+  .android-hero-promise{gap:10px 13px;font-size:9px}
+  .android-hero-promise>span+span:before{margin-right:13px}
+}
+@media(max-width:760px){
+  .android-character-hero{grid-template-columns:1fr;min-height:0;padding-top:6px;padding-bottom:35px;gap:0}
+  .android-character{grid-row:1;min-height:0}
+  .android-robot-scene{height:clamp(300px,84vw,430px);max-width:510px;margin-inline:auto}
+  .android-hello-word{top:5%;font-size:clamp(130px,36vw,220px);left:0}
+  .android-character-caption{margin-top:-18px;min-height:72px}
+  .android-page .android-robot-greeting{font-size:10px;min-height:18px}
+  .android-character-controls{margin-top:4px;gap:3px}
+  .android-character-controls .android-greet-button{font-size:10px;min-height:40px}
+  .android-character-hero .android-hero-copy{text-align:center;padding-top:27px;padding-bottom:0}
+  .android-character-hero .android-hero-copy>.android-eyebrow{justify-content:center;margin-bottom:17px;font-size:9px}
+  .android-page .android-character-hero h1{font-size:clamp(43px,10.5vw,72px);line-height:1.04}
+  .android-character-hero h1>span{display:inline}
+  .android-character-hero .android-hero-description{font-size:12px;max-width:390px;margin:19px auto 0!important;line-height:1.85}
+  .android-character-hero .android-hero-actions{justify-content:center;margin-top:22px;gap:10px 22px}
+  .android-character-hero .android-download-note{justify-content:center;font-size:9px}
+  .android-hero-promise{justify-content:center;margin-top:24px;font-size:9px;gap:10px 14px}
+  .android-hero-promise>span+span:before{margin-right:14px}
+}
+@media(max-width:370px){
+  .android-character-hero{padding-top:0}
+  .android-robot-scene{height:280px}
+  .android-character-caption{margin-top:-12px}
+  .android-page .android-character-hero h1{font-size:40px}
+  .android-character-hero .android-hero-actions{gap:8px 12px}
+}
+.tv-ui .android-character-controls button{min-width:50px;min-height:50px}
+@media(min-width:2200px){
+  .tv-ui .android-character-hero{min-height:1100px;padding-block:50px 75px}
+  .tv-ui .android-robot-scene{height:960px}
+  .tv-ui .android-hello-word{font-size:400px}
+  .tv-ui .android-page .android-character-hero h1{font-size:150px}
+  .tv-ui .android-character-hero .android-hero-description{font-size:24px;max-width:720px}
+  .tv-ui .android-hero-promise,.tv-ui .android-page .android-robot-greeting{font-size:18px}
+  .tv-ui .android-character-controls button{min-width:64px;min-height:64px;font-size:17px}
+  .tv-ui .android-character-controls svg{width:23px;height:23px}
+  .tv-ui .android-character-hero .android-guide-link{font-size:18px}
+  .tv-ui .android-character-hero .android-download-note{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){.android-character-controls button,.android-robot-canvas canvas{transition:none}}

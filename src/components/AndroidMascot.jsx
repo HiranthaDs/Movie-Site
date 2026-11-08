@@ -7,8 +7,7 @@ export function AndroidIcon({size=24,className='',...props}){
   </svg>;
 }
 
-// Vector geometry and animated joints keep the sculpted mascot crisp at any
-// resolution, without a WebGL context or a large model download on TV browsers.
+// Lightweight footer mascot and fallback for devices without WebGL.
 export default function AndroidMascot({dimensional=false,animated=true,decorative=false,className=''}){
   const id=useId().replace(/:/g,'');
   const mascot=useRef(null);
@@ -25,10 +24,9 @@ export default function AndroidMascot({dimensional=false,animated=true,decorativ
       <linearGradient id={`${id}-body`} x1="136" y1="210" x2="288" y2="355" gradientUnits="userSpaceOnUse"><stop stopColor="#c3ff80"/><stop offset=".34" stopColor="#73e54c"/><stop offset=".72" stopColor="#3dbb36"/><stop offset="1" stopColor="#21853c"/></linearGradient>
       <radialGradient id={`${id}-head`} cx="0" cy="0" r="1" gradientTransform="translate(175 117) rotate(54) scale(152 170)" gradientUnits="userSpaceOnUse"><stop stopColor="#e3ffa7"/><stop offset=".35" stopColor="#8cec59"/><stop offset=".76" stopColor="#49c637"/><stop offset="1" stopColor="#269941"/></radialGradient>
       <linearGradient id={`${id}-limb`} x1="0" x2="1"><stop stopColor="#b7fc78"/><stop offset=".4" stopColor="#66d942"/><stop offset="1" stopColor="#249942"/></linearGradient>
-      <linearGradient id={`${id}-base`} x1="180" y1="380" x2="180" y2="445" gradientUnits="userSpaceOnUse"><stop stopColor="#ecefe3"/><stop offset="1" stopColor="#c0c9b5"/></linearGradient>
       <radialGradient id={`${id}-shadow`}><stop stopColor="#1d4226" stopOpacity=".25"/><stop offset="1" stopColor="#1d4226" stopOpacity="0"/></radialGradient>
     </defs>}
-    {dimensional&&<g><ellipse cx="219" cy="432" rx="161" ry="24" fill={`url(#${id}-shadow)`}/><path d="M82 388c0-22 61-39 137-39s137 17 137 39v20c0 22-61 39-137 39S82 430 82 408Z" fill={`url(#${id}-base)`}/><ellipse cx="219" cy="388" rx="137" ry="39" fill="#f7faef"/><ellipse cx="219" cy="388" rx="89" ry="22" fill={`url(#${id}-shadow)`}/></g>}
+    {dimensional&&<ellipse cx="219" cy="391" rx="115" ry="22" fill={`url(#${id}-shadow)`}/>}
     <g className="android-mascot-body">
       <rect x="155" y="305" width="43" height="81" rx="21.5" fill={paint('limb')}/><rect x="239" y="305" width="43" height="81" rx="21.5" fill={paint('limb')}/>
       <g transform="rotate(12 112 226)"><rect x="81" y="211" width="43" height="111" rx="21.5" fill={paint('limb')}/></g>

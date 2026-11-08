@@ -1,11 +1,13 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ArrowDown,ArrowUpRight,Check,ChevronDown,Download,Gamepad2,Heart,Laptop,MonitorPlay,Pause,Play,Search,Smartphone,Sparkles,Tablet,Tv,Wifi} from 'lucide-react';
-import AndroidMascot,{AndroidIcon} from '../components/AndroidMascot';
+import {ArrowDown,ArrowUpRight,Check,ChevronDown,Gamepad2,Heart,Laptop,MonitorPlay,Search,Smartphone,Tablet,Tv,Wifi} from 'lucide-react';
+import {AndroidIcon} from '../components/AndroidMascot';
+import AndroidRobotScene from '../components/AndroidRobotScene';
+import DevicePreview from '../components/AndroidDevicePreview';
 import {APK_FILE_NAME,APK_FOLDER_URL} from '../lib/androidApp';
-import desktopScreen from '../../docs/screenshots/home-desktop.png';
-import mobileScreen from '../../docs/screenshots/home-mobile.png';
 import '../android.css';
+import '../android-devices.css';
+import '../android-character.css';
 
 const devices=[
   {id:'tv',name:'Android TV',tag:'DOWNLOAD THE APK',icon:Tv,description:'Make the big screen your favorite place. Install the TV app and settle in with your remote.',screen:'tv',action:'TV installation guide'},
@@ -52,12 +54,8 @@ function DownloadLink({children='Download APK',className=''}){
   return <a className={`android-download-button ${className}`} href={APK_FOLDER_URL} target="_blank" rel="noopener noreferrer"><AndroidIcon size={23}/><span>{children}</span><ArrowUpRight size={19}/><span className="sr-only"> — opens Google Drive in a new tab</span></a>;
 }
 
-function DevicePreview({type}){
-  return <div className={`android-device-art device-art-${type}`} aria-hidden="true"><div className={`android-device-frame device-frame-${type}`}><div className="device-camera"/><img src={type==='phone'?mobileScreen:desktopScreen} alt="" loading="lazy" decoding="async"/></div><div className="android-device-stand"/></div>;
-}
-
 export default function AndroidApp(){
-  const [device,setDevice]=useState('tv'),[openFaq,setOpenFaq]=useState(0),[animated,setAnimated]=useState(true),[qr,setQr]=useState('');
+  const [device,setDevice]=useState('tv'),[openFaq,setOpenFaq]=useState(0),[qr,setQr]=useState('');
   const guideHeading=useRef(null);
   const guide=guides[device];
   useEffect(()=>{
@@ -71,22 +69,16 @@ export default function AndroidApp(){
     guideHeading.current?.focus({preventScroll:true});
   };
   return <div className="android-page">
-    <section className="android-hero content-width" aria-labelledby="android-title">
+    <section className="android-character-hero content-width" aria-labelledby="android-title">
       <div className="android-hero-copy">
         <div className="android-eyebrow"><span className="android-status-dot"/> CINERA FOR ANDROID™</div>
-        <h1 id="android-title">GOOD STORIES.<br/>GREAT COMPANY.<br/><span>ZERO COST.</span></h1>
-        <p className="android-hero-description">Meet your new movie-night companion. Get Cinera on your Android TV, or take the web app anywhere. Your next great watch is closer than you think.</p>
+        <h1 id="android-title">YOUR NEW<br/>MOVIE <span>BUDDY.</span></h1>
+        <p className="android-hero-description">A little hello. A whole world of stories.<br/>Bring Cinera home to your Android TV, or take the web app with you. Always free. Always good company.</p>
         <div className="android-hero-actions"><DownloadLink/><button className="android-guide-link" onClick={()=>showGuide('tv')}>How to install <ArrowDown size={16}/></button></div>
         <div className="android-download-note"><Check size={14}/><span>Free Android TV APK <i/> Opens Google Drive</span></div>
-        <div className="android-hero-proof"><div><strong>100%</strong><span>free to use</span></div><div><strong>4 screens.</strong><span>one place for stories</span></div><div><strong>No account.</strong><span>just make yourself at home</span></div></div>
+        <div className="android-hero-promise"><span>100% free.</span><span>No account.</span><span>Just press play.</span></div>
       </div>
-      <div className="android-hero-art">
-        <div className="android-art-grid"/><div className="android-orbit orbit-one"/><div className="android-orbit orbit-two"/>
-        <div className="android-hello-note">HEY THERE,<br/><strong>MOVIE PERSON.</strong><Sparkles size={22}/></div>
-        <AndroidMascot dimensional animated={animated}/>
-        <span className="android-float-chip chip-tv"><Tv size={18}/> BIG-SCREEN ENERGY</span><span className="android-float-chip chip-free"><Heart size={15}/> LITTLE ROBOT. BIG HEART.</span>
-        <div className="android-art-bottom"><span><span className="android-status-dot"/> READY FOR MOVIE NIGHT</span><button className="android-motion-toggle" onClick={()=>setAnimated(value=>!value)} aria-label={animated?'Pause mascot animation':'Play mascot animation'} aria-pressed={!animated}>{animated?<Pause size={14}/>:<Play size={14}/>}</button></div>
-      </div>
+      <AndroidRobotScene/>
     </section>
 
     <div className="android-platform-strip"><div className="content-width"><span>MAKE YOURSELF AT HOME.</span>{devices.map(({id,name,icon:Icon})=><button key={id} onClick={()=>showGuide(id)}><Icon size={19}/>{name}</button>)}</div></div>

@@ -1,0 +1,95 @@
+/* Front-facing hardware: the screen, bezel and supports share one silhouette. */
+.android-page .android-device-grid{gap:18px}
+.android-page .android-device-art.android-device-preview{height:228px;padding:28px 22px 25px;align-items:flex-end;perspective:none;isolation:isolate;overflow:visible}
+.android-device-preview .device-silhouette{position:relative;flex-shrink:0;z-index:1}
+.android-page .android-device-preview .android-device-frame{width:100%;max-width:none;height:auto;aspect-ratio:auto;margin:0;transform:none;border:1px solid #657068;background:linear-gradient(#3a433e,#151c18);padding:4px;overflow:visible;box-shadow:0 8px 14px #2033281a}
+.android-device-preview .android-device-screen{position:relative;overflow:hidden;background:#0c1711;isolation:isolate}
+.android-page .android-device-preview .android-device-screen>img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;user-select:none}
+.android-device-preview .android-device-screen::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px #ffffff12;background:linear-gradient(115deg,#ffffff08,transparent 50%)}
+.android-page .android-device-preview .android-device-stand{position:relative;inset:auto;width:100%;height:auto;transform:none;border:0;background:none;border-radius:0}
+.android-device-preview .device-ground-shadow{position:absolute;bottom:23px;left:16%;right:16%;height:9px;border-radius:50%;background:#20332812;filter:blur(5px);z-index:0}
+
+/* Television: true widescreen glass, a slim lower bezel and two separate feet. */
+.android-device-preview .device-silhouette-tv{width:100%;max-width:300px;padding-bottom:14px}
+.android-page .android-device-preview .device-frame-tv{padding:4px 4px 0;border-radius:5px}
+.android-device-preview .device-frame-tv .android-device-screen{aspect-ratio:16/9;border-radius:1px}
+.android-device-preview .device-tv-chin{height:8px;position:relative;display:flex;align-items:center;justify-content:center}
+.android-device-preview .device-tv-chin>span{font-size:3px;line-height:1;font-weight:600;letter-spacing:.18em;color:#b5bfb7}
+.android-device-preview .device-tv-chin>i{position:absolute;right:9%;width:2px;height:2px;background:#acdd95;border-radius:50%}
+.android-page .android-device-preview .device-tv-feet{position:absolute;bottom:0;height:15px;left:0;right:0}
+.device-tv-feet>span{position:absolute;top:0;height:100%;width:16%;background:linear-gradient(90deg,#27382e,#505d52,#233129);clip-path:polygon(43% 0,58% 0,100% 90%,100% 100%,79% 100%,50% 38%,21% 100%,0 100%,0 90%)}
+.device-tv-feet>span:first-child{left:7%}
+.device-tv-feet>span:last-child{right:7%}
+.android-device-preview.device-art-tv .device-ground-shadow{left:10%;right:10%;bottom:24px}
+
+/* Phone: upright display, rounded metal rail, camera and side controls. */
+.android-device-preview .device-silhouette-phone{width:82px;max-width:45%}
+.android-page .android-device-preview .device-frame-phone{padding:3px;border-radius:18px;border-color:#76867a;box-shadow:0 7px 11px #20332824,inset 0 0 0 1px #131e17}
+.android-device-preview .device-frame-phone .android-device-screen{aspect-ratio:9/19.5;border-radius:14px}
+.android-page .android-device-preview .device-frame-phone .device-camera{position:absolute;width:21px;height:5px;top:7px;left:calc(50% - 10.5px);border-radius:5px;background:#172019;box-shadow:0 0 0 1px #ffffff15}
+.device-silhouette-phone::before,.device-silhouette-phone::after{content:"";position:absolute;width:2px;background:#5a6b5d;border-radius:2px;top:38px}
+.device-silhouette-phone::before{left:-1px;height:22px}
+.device-silhouette-phone::after{right:-1px;height:15px;top:47px}
+.android-device-preview.device-art-phone .device-ground-shadow{left:35%;right:35%}
+
+/* Tablet: a landscape display with an even bezel and centered front camera. */
+.android-device-preview .device-silhouette-tablet{width:95%;max-width:222px}
+.android-page .android-device-preview .device-frame-tablet{padding:7px;border-radius:12px;border-color:#69786c}
+.android-device-preview .device-frame-tablet .android-device-screen{aspect-ratio:4/3;border-radius:5px}
+.android-device-preview .device-frame-tablet .device-camera{position:absolute;top:2px;left:calc(50% - 1.5px);width:3px;height:3px;border:1px solid #56655a;border-radius:50%;background:#0e1711}
+.device-silhouette-tablet::after{content:"";position:absolute;top:22px;right:-1px;width:2px;height:14px;border-radius:2px;background:#56675a}
+
+/* Laptop: level lid, webcam, hinge and a wider silver base with a thumb notch. */
+.android-device-preview .device-silhouette-laptop{width:90%;max-width:264px}
+.android-page .android-device-preview .device-frame-laptop{padding:6px 4px 7px;border-radius:7px 7px 2px 2px;border-color:#6a756c}
+.android-device-preview .device-frame-laptop .android-device-screen{aspect-ratio:16/10;border-radius:2px}
+.android-device-preview .device-frame-laptop .device-camera{position:absolute;top:2px;left:calc(50% - 1px);width:2px;height:2px;background:#7d8e80;border-radius:50%}
+.android-page .android-device-preview .device-laptop-base{width:114%;height:9px;margin-left:-7%;background:linear-gradient(#d8ddd6 0 22%,#aab5a8 23% 60%,#6e7b6d 100%);border-radius:1px 1px 14px 14px;box-shadow:0 4px 5px #2033281a}
+.device-laptop-base>span{display:block;width:18%;height:3px;margin:auto;border-radius:0 0 5px 5px;background:#899987;box-shadow:0 1px 0 #edf0e7}
+.android-device-preview.device-art-laptop .device-ground-shadow{left:7%;right:7%}
+
+@media(min-width:1800px){
+  .android-page .android-device-grid{gap:24px}
+  .android-page .android-device-art.android-device-preview{height:280px;padding-inline:30px}
+  .android-device-preview .device-silhouette-tv{max-width:350px}
+  .android-device-preview .device-silhouette-phone{width:101px}
+  .android-device-preview .device-silhouette-tablet{max-width:270px}
+  .android-device-preview .device-silhouette-laptop{max-width:320px}
+}
+@media(max-width:1100px){
+  .android-page .android-device-art.android-device-preview{height:250px;padding-inline:27px}
+  .android-device-preview .device-silhouette-tv{max-width:290px}
+  .android-device-preview .device-silhouette-phone{width:91px}
+  .android-device-preview .device-silhouette-tablet{max-width:245px}
+  .android-device-preview .device-silhouette-laptop{max-width:260px}
+}
+@media(max-width:760px){
+  .android-page .android-device-grid{gap:14px}
+  .android-page .android-device-art.android-device-preview{height:213px;padding:25px 20px}
+  .android-device-preview .device-silhouette-phone{width:75px}
+  .android-device-preview .device-silhouette-tablet{max-width:214px}
+}
+@media(max-width:520px){
+  .android-page .android-device-grid{grid-template-columns:1fr;gap:18px}
+  .android-page .android-device-top{padding:22px 24px 0}
+  .android-page .android-device-top>span{font-size:9px;letter-spacing:.07em}
+  .android-page .android-device-art.android-device-preview{height:236px;padding:24px 30px}
+  .android-device-preview .device-silhouette-phone{width:88px}
+  .android-device-preview .device-silhouette-tablet{max-width:242px}
+  .android-page .android-device-copy{padding:6px 24px 24px}
+  .android-page .android-device-copy h3{font-size:24px}
+  .android-page .android-device-copy p{font-size:12px;line-height:1.8}
+  .android-page .android-device-copy button{font-size:12px;min-height:48px}
+}
+@media(min-width:2200px){
+  .tv-ui .android-page .android-device-art.android-device-preview{height:360px;padding:38px 36px}
+  .tv-ui .android-device-preview .device-silhouette-tv{max-width:450px}
+  .tv-ui .android-device-preview .device-silhouette-phone{width:128px}
+  .tv-ui .android-device-preview .device-silhouette-tablet{max-width:345px}
+  .tv-ui .android-device-preview .device-silhouette-laptop{max-width:400px}
+  .tv-ui .android-device-preview .device-tv-chin{height:12px}
+  .tv-ui .android-device-preview .device-tv-chin>span{font-size:5px}
+  .tv-ui .android-device-preview .device-silhouette-tv{padding-bottom:19px}
+  .tv-ui .android-page .android-device-preview .device-tv-feet{height:20px}
+  .tv-ui .android-page .android-device-preview .device-laptop-base{height:12px}
+}
