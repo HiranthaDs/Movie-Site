@@ -1,6 +1,6 @@
 // This file is copied directly to the build and is not transformed by Vite.
 // Keep it compatible with the same older TV browsers as the legacy app bundle.
-var VERSION='cinera-v6-reliable-library';
+var VERSION='cinera-v10-iphone-updates';
 var SHELL_CACHE=VERSION+'-shell';
 var DATA_CACHE=VERSION+'-data';
 var APP_SHELL=[
@@ -17,8 +17,6 @@ var APP_SHELL=[
 self.addEventListener('install',function(event){
   event.waitUntil(caches.open(SHELL_CACHE).then(function(cache){
     return cache.addAll(APP_SHELL);
-  }).then(function(){
-    return self.skipWaiting();
   }));
 });
 

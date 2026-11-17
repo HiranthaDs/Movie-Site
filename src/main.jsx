@@ -23,6 +23,7 @@ const Watchlist=lazy(()=>import('./pages/Watchlist'));
 const PairRemote=lazy(()=>import('./pages/PairRemote'));
 const PhoneRemote=lazy(()=>import('./pages/PhoneRemote'));
 const AndroidApp=lazy(()=>import('./pages/AndroidApp'));
+const IPhoneApp=lazy(()=>import('./pages/IPhoneApp'));
 
 function PageLoader(){return <div className="route-loader" role="status"><span/><strong>Loading your next story…</strong></div>;}
 function NotFound(){return <div className="content-width not-found"><h1>404</h1><p>The page you're looking for doesn't exist.</p><a className="button button-primary" href="/">Back to home</a></div>;}
@@ -47,6 +48,7 @@ function App(){return <StoreProvider><BrowserRouter><RemoteProvider><SiteLayout>
   <Route path="/pair" element={<PairRemote/>}/>
   <Route path="/remote" element={<PhoneRemote/>}/>
   <Route path="/android" element={<AndroidApp/>}/>
+  <Route path="/iphone" element={<IPhoneApp/>}/>
   <Route path="*" element={<NotFound/>}/>
 </Routes></Suspense></SiteLayout></RemoteProvider></BrowserRouter></StoreProvider>;}
 initializePwa();

@@ -26,7 +26,7 @@ export function Card({item,wide=false,resume=false}){
   const watchPath=`/watch/${item.kind}/${item.id}${item.kind==='tv'?`?season=${item.season||1}&episode=${item.episode||1}`:''}`;
   const destination=resume?watchPath:`/title/${item.kind}/${item.id}`;
   return <article className={`movie-card ${wide?'wide-card':''}`}>
-    <Link className="card-image-link" to={destination} aria-label={`${resume?'Resume':'View'} ${item.title}`}>
+    <Link className="card-image-link" to={destination} state={resume?{watchItem:item}:undefined} aria-label={`${resume?'Resume':'View'} ${item.title}`}>
       <Poster item={item} mode={wide?'backdrop':'poster'}/>
       <span className="quality-tag">{item.kind==='tv'?'SERIES':'FILM'}</span>
       <span className="card-play"><Play size={22} fill="currentColor"/></span>
@@ -35,7 +35,7 @@ export function Card({item,wide=false,resume=false}){
     <button className={`card-save ${saved?'is-saved':''}`} onClick={()=>toggleSaved(item)} aria-pressed={saved} aria-label={`${saved?'Remove from':'Add to'} watchlist: ${item.title}`} title={saved?'Remove from watchlist':'Add to watchlist'}>{saved?<Check size={15}/>:<Plus size={16}/>}</button>
     <Link to={`/title/${item.kind}/${item.id}`} className="card-title" title={item.title}>{item.title}</Link>
     <div className="card-meta"><span>{item.year||'—'}</span><span className="dot">·</span><span>{item.kind==='tv'?'TV Series':'Movie'}</span><span className="card-rating"><Star size={11} fill="currentColor"/>{rating(item.rating)}</span></div>
-    {resume&&<Link className="card-resume" to={watchPath}><Play size={12} fill="currentColor"/><span>{item.kind==='tv'?`S${item.season||1} · E${item.episode||1}`:'Continue'}{progress?.duration>progress?.seconds?` · ${Math.ceil((progress.duration-progress.seconds)/60)}m left`:''}</span></Link>}
+    {resume&&<Link className="card-resume" to={watchPath} state={{watchItem:item}}><Play size={12} fill="currentColor"/><span>{item.kind==='tv'?`S${item.season||1} · E${item.episode||1}`:'Continue'}{progress?.duration>progress?.seconds?` · ${Math.ceil((progress.duration-progress.seconds)/60)}m left`:''}</span></Link>}
   </article>;
 }
 

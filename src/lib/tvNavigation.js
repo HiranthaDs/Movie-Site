@@ -56,7 +56,7 @@ const handleRemoteBack=()=>{
     return true;
   }
   const dialog=document.querySelector('[role="dialog"][aria-modal="true"]');
-  const close=dialog?.querySelector('[aria-label^="Close"],.search-cancel,.filter-close,.shortcut-close');
+  const close=dialog?.querySelector('[aria-label^="Close"],.search-cancel,.filter-close,.shortcut-close,.external-player-cancel');
   if(close){close.click();return true;}
   const expanded=document.querySelector('[aria-expanded="true"][aria-controls]');
   if(expanded){expanded.click();return true;}

@@ -35,7 +35,7 @@ function Hero({featured}){
         <h1 key={movie.id}>{movie.title}</h1>
         <div className="hero-movie-meta"><span>{movie.year||'TBA'}</span><span>{movie.kind==='tv'?'TV series':'Movie'}</span><span><Star size={13} fill="currentColor"/> {movie.rating?Number(movie.rating).toFixed(1):'NR'}</span></div>
         <p className="hero-movie-overview">{truncated(movie.overview,215)}</p>
-        <div className="hero-buttons"><Link data-tv-autofocus to={`/watch/${movie.kind}/${movie.id}`} className="button button-primary button-large"><Play size={17} fill="currentColor"/> Watch options</Link><Link to={`/title/${movie.kind}/${movie.id}`} className="button button-glass button-large"><Info size={18}/> Details</Link></div>
+        <div className="hero-buttons"><Link data-tv-autofocus to={`/watch/${movie.kind}/${movie.id}`} state={{watchItem:movie}} className="button button-primary button-large"><Play size={17} fill="currentColor"/> Watch options</Link><Link to={`/title/${movie.kind}/${movie.id}`} className="button button-glass button-large"><Info size={18}/> Details</Link></div>
       </div>
       <div className="hero-card-stack" style={{backgroundImage:movie.backdrop||movie.poster?`url('${img(movie.backdrop||movie.poster,'w1280')}')`:undefined}}>
         <div className="hero-card-number">{String(selected+1).padStart(2,'0')}</div>

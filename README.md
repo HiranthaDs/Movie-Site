@@ -96,6 +96,7 @@ The catalog uses TMDB metadata for discovery while keeping playback providers se
 | Phone remote | QR pairing, trackpad, cursor, focus gestures, keyboard, haptics, playback controls |
 | PWA | Installable manifest, offline shell, cache rotation, mobile home-screen support |
 | Android app | Free TV APK download page, waving mascot, QR downloads, device setup guides, and compatibility FAQs |
+| iPhone app | Safari Add to Home Screen guide, iPhone preview, and update notice for new web app versions |
 
 ## Architecture
 
@@ -158,11 +159,17 @@ ENABLE_VIDY=true
 
 Never commit `.env`, `.dev.vars`, API tokens, or account credentials.
 
+## Install on iPhone
+
+Open `/iphone` in Safari on the iPhone. Tap Share (or Page Menu, then Share), choose **Add to Home Screen**, enable **Open as Web App** if shown, and tap Add. This installs the website as a Home Screen web app; there is no separate iOS APK or App Store package. The page links to Apple's current instructions.
+
+Each production build stamps the service worker with a hash of the built assets. When a new version is ready, Cinera shows an **Update now** notice. The viewer decides when to reload, so a movie is not interrupted. The Android TV APK has its own update process through the download folder.
+
 ## Playback sources
 
 Direct HTTPS MP4 and HLS sources in `worker/sources.js` are preferred. Configure only media you are authorized to distribute.
 
-On detected TV browsers, the optional Vidy fallback offers a remote-friendly full-page launch first. This avoids the autoplay and focus restrictions that many Android TV and webOS browsers apply to cross-origin iframes; the remote Back button returns to Cinera. An in-page embed remains available as a fallback.
+The optional Vidy fallback requires an unsandboxed iframe for its scripts and forms. On confirmed TV browsers, Cinera opens Vidy as a full-page player so the remote is not trapped in an inaccessible cross-origin iframe. Cinera asks before opening the external player; the provider may still create its own popups after navigation. On other devices, the in-page embed remains available. To avoid provider ads entirely, disable `ENABLE_VIDY` and configure licensed direct MP4 or HLS sources.
 
 ```js
 export const playbackSources = {

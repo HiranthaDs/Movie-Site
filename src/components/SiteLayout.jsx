@@ -1,5 +1,5 @@
 import React,{useState,useEffect,useRef} from 'react';
-import {Link,NavLink,useLocation} from 'react-router-dom';
+import {Link,NavLink,useLocation,useNavigate} from 'react-router-dom';
 import {Search,Heart,Film,Tv,Compass,House,Menu,X,ArrowUpRight,Play,Clapperboard,Download,CheckCircle2,Share2,Gamepad2} from 'lucide-react';
 import {useStore} from '../lib/store';
 import {usePwaInstall} from '../lib/pwa';
@@ -8,6 +8,8 @@ import SmartSearch from './SmartSearch';
 import {ConnectionNotice,ToastViewport} from './AppFeedback';
 import RouteEffects from './RouteEffects';
 import AndroidMascot,{AndroidIcon} from './AndroidMascot';
+import AppleBrand from './AppleBrand';
+import AppUpdateNotice from './AppUpdateNotice';
 
 const links=[
   {to:'/',label:'Home',caption:'Featured stories',icon:House},
@@ -16,10 +18,12 @@ const links=[
   {to:'/discover',label:'Discover',caption:'Filter by your mood',icon:Compass},
   {to:'/watchlist',label:'My list',caption:'Saved for later',icon:Heart},
   {to:'/android',label:'Android app',caption:'Free TV APK & setup guides',icon:AndroidIcon},
+  {to:'/iphone',label:'iPhone app',caption:'Add to Home Screen in Safari',icon:AppleBrand},
 ];
 
 function SiteHeader(){
   const location=useLocation();const {saved}=useStore();
+  const navigate=useNavigate();
   const [searchOpen,setSearchOpen]=useState(false),[menuOpen,setMenuOpen]=useState(false),[scrolled,setScrolled]=useState(false),[watchHeaderHidden,setWatchHeaderHidden]=useState(false);
   const [installNote,setInstallNote]=useState('');
   const {canInstall,installed,isiOS,install}=usePwaInstall();
@@ -65,7 +69,8 @@ function SiteHeader(){
       setInstallNote(result.outcome==='accepted'?'Cinera is being added to this device.':'Installation was dismissed. You can try again from the browser menu.');
       return;
     }
-    setInstallNote(isiOS?'Tap Share, then choose “Add to Home Screen”.':'Open your browser menu and choose “Install app” or “Add to Home screen”.');
+    if(isiOS){setMenuOpen(false);navigate('/iphone');return;}
+    setInstallNote('Open your browser menu and choose “Install app” or “Add to Home screen”.');
   };
   return <>
     <header className={`site-header ${scrolled?'header-scrolled':''} ${watchHeaderHidden&&!menuOpen&&!searchOpen?'header-watch-hidden':''}`} id="top"><div className="header-inner">
@@ -87,6 +92,6 @@ function Footer(){return <footer className="site-footer"><div className="footer-
 
 export default function SiteLayout({children}){
   const location=useLocation();
-  if(location.pathname==='/remote')return <div className="remote-app-shell"><RouteEffects/><main id="main-content" tabIndex={-1}>{children}</main><ToastViewport/></div>;
-  return <div className="app-shell"><RouteEffects/><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><ConnectionNotice/><main id="main-content" tabIndex={-1}>{children}</main><Footer/><nav className="mobile-bottom-nav" aria-label="Main navigation">{links.filter((_,index)=>index!==3).map(({to,label,icon:Icon})=><NavLink to={to} key={to} end={to==='/' }><Icon size={20}/><span>{label==='TV series'?'Series':label==='Android app'?'Android':label}</span></NavLink>)}</nav><ToastViewport/></div>;
+  if(location.pathname==='/remote')return <div className="remote-app-shell"><RouteEffects/><main id="main-content" tabIndex={-1}>{children}</main><AppUpdateNotice/><ToastViewport/></div>;
+  return <div className="app-shell"><RouteEffects/><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><ConnectionNotice/><main id="main-content" tabIndex={-1}>{children}</main><Footer/><nav className="mobile-bottom-nav" aria-label="Main navigation">{links.filter((_,index)=>index!==3&&index!==6).map(({to,label,icon:Icon})=><NavLink to={to} key={to} end={to==='/' }><Icon size={20}/><span>{label==='TV series'?'Series':label==='Android app'?'Android':label}</span></NavLink>)}</nav><AppUpdateNotice/><ToastViewport/></div>;
 }

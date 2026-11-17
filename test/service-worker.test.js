@@ -4,6 +4,16 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source=await readFile(new URL('../public/sw.js',import.meta.url),'utf8');
+
+test('a new service worker waits until the viewer chooses to update',async()=>{
+  const listeners={};let skipped=0,pending;
+  vm.runInNewContext(source,{fetch:()=>{},caches:{open:async()=>({addAll:async()=>{}})},URL,Response,Promise,self:{location:{origin:'https://cinera.test'},addEventListener:(name,handler)=>{listeners[name]=handler;},skipWaiting:()=>{skipped+=1;}}});
+  listeners.install({waitUntil:value=>{pending=value;}});
+  await pending;
+  assert.equal(skipped,0);
+  listeners.message({data:{type:'SKIP_WAITING'}});
+  assert.equal(skipped,1);
+});
 function worker({fetch,caches}){
   const listeners={};
   vm.runInNewContext(source,{fetch,caches,URL,Response,Promise,self:{location:{origin:'https://cinera.test'},addEventListener:(name,handler)=>{listeners[name]=handler;}}});

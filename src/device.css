@@ -74,3 +74,20 @@
 }
 
 .menu-panel,.search-overlay,.filter-overlay,.player-loading,.player-error,.server-discovery,.player-start-prompt,.video-element,.detail-backdrop:after,.hero-card-stack:before{top:0;right:0;bottom:0;left:0}
+
+.embed-recovery{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:16px;padding:16px;border:1px solid #333;background:#141414}
+.embed-recovery>div{min-width:0;margin:6px}
+.embed-recovery strong{font-size:13px;color:#fff}
+.embed-recovery p{font-size:12px;line-height:1.6;color:#aaa;margin:6px 0 0}
+.embed-recovery-actions{display:flex;flex-wrap:wrap}
+.embed-recovery-actions .button{min-height:44px;margin:4px;padding:10px 16px;font-size:12px;white-space:normal;text-align:center}
+@media(max-width:600px){.embed-recovery{padding:10px}.embed-recovery-actions{width:100%}.embed-recovery-actions .button{flex:1 1 180px}}
+.external-player-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.82)}
+.external-player-dialog{width:min(100%,480px);padding:28px;border:1px solid #4a4a4a;background:#171717;box-shadow:0 20px 80px rgba(0,0,0,.65)}
+.external-player-dialog h2{margin:10px 0;font-size:clamp(22px,3vw,30px);color:#fff}
+.external-player-dialog p{line-height:1.6;color:#ccc}
+.external-player-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.external-player-actions .button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;flex:1 1 170px;text-align:center}
+.app-update-notice{position:fixed;z-index:9000;right:20px;bottom:20px;display:flex;align-items:center;gap:15px;width:min(440px,calc(100vw - 30px));padding:16px;border:1px solid #464a55;border-radius:16px;background:#1d2029;color:#fff;box-shadow:0 15px 55px #0008}.app-update-notice>svg{flex:none;color:#a7c4ff}.app-update-notice>div{display:grid;gap:3px;flex:1;min-width:0}.app-update-notice strong{font-size:13px}.app-update-notice span{font-size:11px;color:#bcc2ce}.app-update-notice button{flex:none;min-height:42px;padding:8px 13px;border:0;border-radius:9px;background:#fff;color:#17171a;font-size:12px;font-weight:700}
+@media(max-width:700px){.app-update-notice{right:15px;bottom:82px}}
+.apple-brand-icon{object-fit:contain}.menu-panel .apple-brand-icon,.site-footer .apple-brand-icon{filter:invert(1)}

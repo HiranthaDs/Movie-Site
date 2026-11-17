@@ -2,6 +2,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ArrowDown,ArrowUpRight,Check,ChevronDown,Gamepad2,Heart,Laptop,MonitorPlay,Search,Smartphone,Tablet,Tv,Wifi} from 'lucide-react';
 import {AndroidIcon} from '../components/AndroidMascot';
+import AppleBrand from '../components/AppleBrand';
 import AndroidRobotScene from '../components/AndroidRobotScene';
 import DevicePreview from '../components/AndroidDevicePreview';
 import {APK_FILE_NAME,APK_FOLDER_URL} from '../lib/androidApp';
@@ -74,7 +75,7 @@ export default function AndroidApp(){
         <div className="android-eyebrow"><span className="android-status-dot"/> CINERA FOR ANDROID™</div>
         <h1 id="android-title">YOUR NEW<br/>MOVIE <span>BUDDY.</span></h1>
         <p className="android-hero-description">A little hello. A whole world of stories.<br/>Bring Cinera home to your Android TV, or take the web app with you. Always free. Always good company.</p>
-        <div className="android-hero-actions"><DownloadLink/><button className="android-guide-link" onClick={()=>showGuide('tv')}>How to install <ArrowDown size={16}/></button></div>
+        <div className="android-hero-actions"><DownloadLink/><button className="android-guide-link" onClick={()=>showGuide('tv')}>How to install <ArrowDown size={16}/></button><Link className="android-guide-link" to="/iphone"><AppleBrand size={16}/> Have an iPhone? <ArrowUpRight size={16}/></Link></div>
         <div className="android-download-note"><Check size={14}/><span>Free Android TV APK <i/> Opens Google Drive</span></div>
         <div className="android-hero-promise"><span>100% free.</span><span>No account.</span><span>Just press play.</span></div>
       </div>

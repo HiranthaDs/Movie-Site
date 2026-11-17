@@ -4,6 +4,8 @@ let deferredPrompt=null;
 let installed=false;
 let initialized=false;
 const listeners=new Set();
+const updateListeners=new Set();
+let waitingUpdate=null;
 
 const standalone=()=>window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true;
 const isiOS=()=>/iphone|ipad|ipod/i.test(window.navigator.userAgent);
@@ -31,10 +33,41 @@ export function initializePwa(){
 export function registerServiceWorker(){
   if(!import.meta.env.PROD||!('serviceWorker' in navigator))return;
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'}).catch(error=>{
+    navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'}).then(registration=>{
+      const ready=worker=>{
+        const candidate=registration.waiting||worker;
+        if(!candidate||!navigator.serviceWorker.controller)return;
+        waitingUpdate=candidate;
+        updateListeners.forEach(listener=>listener(true));
+      };
+      ready();
+      registration.addEventListener('updatefound',()=>{
+        const worker=registration.installing;
+        worker?.addEventListener('statechange',()=>{if(worker.state==='installed')ready(worker);});
+      });
+      const check=()=>{if(!document.hidden)registration.update().catch(()=>{});};
+      document.addEventListener('visibilitychange',check);
+      window.addEventListener('online',check);
+      window.setInterval(check,60*60*1000);
+      check();
+    }).catch(error=>{
       console.warn('[pwa] Service worker registration failed:',error.message);
     });
   },{once:true});
+}
+
+export function useAppUpdate(){
+  const [available,setAvailable]=useState(Boolean(waitingUpdate));
+  useEffect(()=>{
+    updateListeners.add(setAvailable);
+    return()=>updateListeners.delete(setAvailable);
+  },[]);
+  const apply=useCallback(()=>{
+    if(!waitingUpdate)return;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload(),{once:true});
+    waitingUpdate.postMessage({type:'SKIP_WAITING'});
+  },[]);
+  return {available,apply};
 }
 
 export function usePwaInstall(){
